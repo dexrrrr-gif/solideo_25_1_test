@@ -21,8 +21,20 @@ from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.lib.units import inch
 from reportlab.lib import colors
 from reportlab.lib.enums import TA_CENTER, TA_LEFT
+from reportlab.pdfbase import pdfmetrics
+from reportlab.pdfbase.ttfonts import TTFont
 import warnings
 warnings.filterwarnings('ignore')
+
+# 한글 폰트 등록
+try:
+    pdfmetrics.registerFont(TTFont('NanumGothic', '/usr/share/fonts/truetype/nanum/NanumGothic.ttf'))
+    pdfmetrics.registerFont(TTFont('NanumGothicBold', '/usr/share/fonts/truetype/nanum/NanumGothicBold.ttf'))
+    KOREAN_FONT = 'NanumGothic'
+    KOREAN_FONT_BOLD = 'NanumGothicBold'
+except:
+    KOREAN_FONT = 'Helvetica'
+    KOREAN_FONT_BOLD = 'Helvetica-Bold'
 
 class SystemMonitor:
     """시스템 리소스 실시간 모니터링 클래스 (Headless)"""
@@ -221,7 +233,7 @@ class SystemMonitor:
             textColor=colors.HexColor('#2C3E50'),
             spaceAfter=30,
             alignment=TA_CENTER,
-            fontName='Helvetica-Bold'
+            fontName=KOREAN_FONT_BOLD
         )
 
         # 부제목 스타일
@@ -232,7 +244,7 @@ class SystemMonitor:
             textColor=colors.HexColor('#34495E'),
             spaceAfter=12,
             alignment=TA_LEFT,
-            fontName='Helvetica-Bold'
+            fontName=KOREAN_FONT_BOLD
         )
 
         # 제목
@@ -255,9 +267,9 @@ class SystemMonitor:
         info_table.setStyle(TableStyle([
             ('BACKGROUND', (0, 0), (0, -1), colors.HexColor('#3498DB')),
             ('TEXTCOLOR', (0, 0), (0, -1), colors.whitesmoke),
-            ('FONTNAME', (0, 0), (-1, -1), 'Helvetica'),
+            ('FONTNAME', (0, 0), (-1, -1), KOREAN_FONT),
             ('FONTSIZE', (0, 0), (-1, -1), 10),
-            ('FONTNAME', (0, 0), (0, -1), 'Helvetica-Bold'),
+            ('FONTNAME', (0, 0), (0, -1), KOREAN_FONT_BOLD),
             ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
             ('GRID', (0, 0), (-1, -1), 1, colors.black),
             ('ROWBACKGROUNDS', (1, 0), (1, -1), [colors.white, colors.HexColor('#ECF0F1')]),
@@ -313,7 +325,8 @@ class SystemMonitor:
         stats_table.setStyle(TableStyle([
             ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#2ECC71')),
             ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
-            ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+            ('FONTNAME', (0, 0), (-1, 0), KOREAN_FONT_BOLD),
+            ('FONTNAME', (0, 1), (-1, -1), KOREAN_FONT),
             ('FONTSIZE', (0, 0), (-1, -1), 9),
             ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
             ('GRID', (0, 0), (-1, -1), 1, colors.black),
@@ -350,6 +363,14 @@ class SystemMonitor:
     def save_charts(self):
         """차트를 이미지로 저장"""
         print("  - 차트 생성 중...")
+
+        # matplotlib 한글 폰트 설정
+        import matplotlib.font_manager as fm
+        font_path = '/usr/share/fonts/truetype/nanum/NanumGothic.ttf'
+        if os.path.exists(font_path):
+            font_prop = fm.FontProperties(fname=font_path)
+            plt.rcParams['font.family'] = font_prop.get_name()
+        plt.rcParams['axes.unicode_minus'] = False  # 마이너스 기호 깨짐 방지
 
         # 개요 차트
         fig1 = plt.figure(figsize=(16, 10))
